@@ -7,7 +7,10 @@ import com.example.advisor.supportbot.tool.TicketTools;
 import com.example.advisor.supportbot.model.enums.SentimentType;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,26 +20,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class SupportBotService {
 
-    private static final String SYSTEM_PROMPT = """
-            You are a friendly and professional customer support agent for TaskFlow,
-            a project management and team collaboration platform.
-
-            Your responsibilities:
-            1. Answer questions about TaskFlow features, pricing, and usage
-            2. Help troubleshoot common issues
-            3. Guide users through processes step-by-step
-            4. Escalate to human support when necessary
-
-            Guidelines:
-            - Be concise but thorough
-            - Use markdown formatting for clarity (bullet points, bold, code blocks)
-            - Always maintain a helpful and positive tone
-            - If you don't know something, admit it and offer alternatives
-            - Never make up information about features or pricing
-            """;
-
     private final ChatClient chatClient;
     private final KnowledgeBaseService knowledgeBaseService;
+
+    @Value("classpath:/prompts/system.st")
+    private Resource systemPromptResource;
 
     // Advisors
     private final SupportSafetyAdvisor safetyAdvisor;
@@ -80,8 +68,10 @@ public class SupportBotService {
         String category = knowledgeBaseService.categorizeQuery(request.message());
 
         // Build enhanced system prompt with RAG context
-        String enhancedSystemPrompt = SYSTEM_PROMPT + "\n\n## Knowledge Base Context\n" +
-                "Category: " + category + "\n\n" + context;
+        SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(systemPromptResource);
+        String enhancedSystemPrompt = systemPromptTemplate.createMessage(java.util.Map.of(
+                "category", category,
+                "context", context)).getText();
 
         // Set customer context for advisors
         Long customerId = parseCustomerId(request.customerId());

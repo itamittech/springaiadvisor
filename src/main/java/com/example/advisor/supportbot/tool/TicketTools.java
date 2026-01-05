@@ -46,17 +46,32 @@ public class TicketTools {
 
         System.out.println("🤖 Tool Call: createTicket for Customer " + customerId);
 
+        // 🔒 SECURITY & VALIDATION
+        if (customerId == null) {
+            return "❌ Error: Customer ID is required to create a ticket.";
+        }
+        if (subject == null || subject.trim().isEmpty()) {
+            return "❌ Error: Ticket subject cannot be empty.";
+        }
+
+        // Validate Priority
+        TicketPriority ticketPriority = TicketPriority.MEDIUM;
+        if (priority != null) {
+            try {
+                ticketPriority = TicketPriority.valueOf(priority.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return "❌ Error: Invalid priority level '" + priority + "'. Allowed: LOW, MEDIUM, HIGH, CRITICAL.";
+            }
+        }
+
+        TicketPriority finalPriority = ticketPriority;
         return customerRepository.findById(customerId).map(customer -> {
             Ticket ticket = new Ticket();
             ticket.setCustomer(customer);
             ticket.setSubject(subject);
-            ticket.setDescription(description);
+            ticket.setDescription(description != null ? description : "");
             ticket.setStatus(TicketStatus.OPEN);
-            try {
-                ticket.setPriority(TicketPriority.valueOf(priority.toUpperCase()));
-            } catch (Exception e) {
-                ticket.setPriority(TicketPriority.MEDIUM);
-            }
+            ticket.setPriority(finalPriority);
             ticket.setCategory("agent-created");
             ticket.setCreatedAt(LocalDateTime.now());
 
