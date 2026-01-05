@@ -1,49 +1,31 @@
-# Spring AI Advisor - Project Context
+# 🤖 Agent Context Memory
+> **READ THIS FIRST** when resuming the session.
 
-## Project Overview
-Spring Boot 3.5.9 + Spring AI 1.1.2 application demonstrating chat advisors.
+## 📍 Current State: Level 3 (Advisors)
+We have successfully implemented the **Support Bot** using the **Advisor Pattern** (Chain of Responsibility).
 
-## Key Files
-| File | Purpose |
-|---|---|
-| `AdvisorConfiguration.java` | Bean definitions: VectorStore, SafeGuardAdvisor, CustomLoggingAdvisor, ChatMemory beans |
-| `AdvisorAssignmentController.java` | 8 REST endpoints for different advisor demos |
-| `CustomLoggingAdvisor.java` | CallAdvisor implementation for token/performance logging |
-| `PromptEnhancerAdvisor.java` | Spring AOP @Aspect for prompt modification |
-| `app.js` | Frontend: dynamic tutorials, markdown rendering in chat |
-| `styles.css` | Dark theme with glassmorphism |
+### Key Accomplishments
+1.  **Advisor Chain**: Implemented Safety -> Context -> Sentiment -> Escalation -> Formatting.
+2.  **RAG**: Implemented `KnowledgeBaseService` with simple text chunking.
+3.  **UI**: Created Thymeleaf frontend at `/supportbot`.
+4.  **Standardization**: Added educational Javadocs (`@learning`) and diagrams to Level 3 code.
 
-## Custom Advisor Pattern (Spring AI 1.1.2)
-```java
-import org.springframework.ai.chat.client.ChatClientRequest;
-import org.springframework.ai.chat.client.ChatClientResponse;
-import org.springframework.ai.chat.client.advisor.api.CallAdvisor;
-import org.springframework.ai.chat.client.advisor.api.CallAdvisorChain;
+## 🛣️ The Roadmap (Next Steps)
+We are moving to **Level 4: Agentic AI**.
 
-public class CustomLoggingAdvisor implements CallAdvisor {
-    @Override
-    public ChatClientResponse adviseCall(ChatClientRequest request, CallAdvisorChain chain) {
-        ChatClientResponse response = chain.nextCall(request);
-        // Access: response.chatResponse().getMetadata().getUsage().getPromptTokens()
-        return response;
-    }
-}
-```
+**Goal:** Refactor "Ticket Escalation" from *Rule-Based* to *Agentic*.
 
-## Advisors Available
-- `MessageChatMemoryAdvisor` - Chat memory management
-- `SafeGuardAdvisor` - Content filtering
-- `SimpleLoggerAdvisor` - Basic logging
-- `QuestionAnswerAdvisor` - RAG (deprecated, use manual VectorStore search)
+**Tasks:**
+1.  Create feature branch `level-4-agents`.
+2.  Refactor `TicketEscalationAdvisor` (delete or disable it).
+3.  Create `TicketTools.java` with `@Tool`.
+4.  Update `SupportBotService` to enable Function Calling.
 
-## Common Issues Resolved
-1. **AdvisedRequest/Response not found**: Use `ChatClientRequest`/`ChatClientResponse` from `org.springframework.ai.chat.client`
-2. **getGenerationTokens() not found**: Use `getCompletionTokens()` instead
-3. **Port 8080 in use**: Kill with `taskkill /F /PID <pid>` (find via `jps -l`)
+## 🏗️ Architecture Notes
+- **Docs**: detailed docs are in `docs/`.
+- **Advisors**: `src/main/java/.../advisor/`.
+- **Config**: `SupportBotConfiguration.java` currently wires manual advisors.
 
-## Testing Commands
-```bash
-mvn spring-boot:run              # Start server
-curl "localhost:8080/advisor/chat/memory?message=Hello"
-curl -H "userId: user1" "localhost:8080/advisor/chat/user?message=Hello"
-```
+## ⚠️ Constraints
+- Keep `application.properties` clean (H2 by default).
+- Maintain "Educational" standard (comments explaining *why*).
