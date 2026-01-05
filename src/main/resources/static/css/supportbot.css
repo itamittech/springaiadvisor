@@ -57,11 +57,15 @@ body {
     /* Using Flexbox for main layout */
     height: 100%;
     width: 100%;
+    min-width: 0;
+    /* CSS Flexbox fix for nested scrolling */
 }
 
 /* Sidebar (Left) */
 .sidebar {
     width: 260px;
+    min-width: 260px;
+    /* Prevent squishing */
     background-color: var(--bg-sidebar);
     border-right: 1px solid var(--border-color);
     display: flex;
@@ -71,7 +75,7 @@ body {
     z-index: 20;
 }
 
-/* Chat Area (Center) - The Core Fix */
+/* Chat Area (Center) */
 .chat-container {
     flex: 1;
     /* Take remaining width */
@@ -79,14 +83,15 @@ body {
     flex-direction: column;
     background-color: var(--bg-chat);
     position: relative;
-    /* Context for absolute elements if needed */
     min-width: 0;
-    /* Prevent flex item from overflowing */
+    /* Allow flex item to shrink below content size if needed (prevents overflow) */
 }
 
 /* Right Panel */
 .tickets-panel {
     width: 300px;
+    min-width: 300px;
+    /* Prevent squishing */
     background-color: var(--bg-sidebar);
     border-left: 1px solid var(--border-color);
     display: flex;
@@ -98,12 +103,27 @@ body {
 
 /* Headers */
 .sidebar-header,
-.chat-header,
 .panel-header {
     height: 60px;
     display: flex;
     align-items: center;
     padding: 0 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+/* Chat Header: Vertical Stack for separate title/subtitle */
+.chat-header {
+    height: auto;
+    /* Allow dynamic height */
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    /* Stack vertically! */
+    justify-content: center;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 1rem 2rem;
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
 }
@@ -131,17 +151,44 @@ body {
     /* Fill available vertical space */
     overflow-y: auto;
     /* Scrollable */
-    padding: 2rem;
+    padding: 1.5rem 2rem;
+    /* Reduced vertical padding slightly */
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
 }
 
+/* Scrollbars - Global Fix */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-app);
+    border-left: 1px solid var(--border-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    /* Gray-600 */
+    border-radius: 4px;
+    border: 2px solid var(--bg-app);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+}
+
+
 /* Messages */
 .message {
     display: flex;
     gap: 1rem;
-    max-width: 85%;
+    max-width: 90%;
+    /* Increased max-width */
+    width: fit-content;
+    /* Don't stretch to 90% if content is small */
 }
 
 .bot-message {
@@ -183,6 +230,10 @@ body {
     white-space: pre-wrap;
     /* Critical for streaming spacing */
     box-shadow: var(--shadow-sm);
+    min-width: 50px;
+    /* Ensure it doesn't collapse */
+    word-break: break-word;
+    /* Prevent overflow */
 }
 
 .bot-message .message-content {
