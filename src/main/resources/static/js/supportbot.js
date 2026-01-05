@@ -67,8 +67,12 @@ async function handleCustomerChange() {
             // Load tickets for this customer
             loadTickets();
 
-            // Add system message
-            addMessage('bot', `👋 Hello, ${customer.name}! I can see you're on the **${customer.plan}** plan. How can I help you today?`);
+            // FETCH & LOAD HISTORY
+            loadChatHistory(customerId);
+
+            // Add system message if no history
+            // We'll move this into loadChatHistory logic
+            // addMessage('bot', `👋 Hello, ${customer.name}! I can see you're on the **${customer.plan}** plan. How can I help you today?`);
         } catch (error) {
             console.error('Failed to load customer:', error);
         }
@@ -118,6 +122,42 @@ async function loadTickets() {
     }
 }
 
+// Load chat history for current customer
+async function loadChatHistory(customerId) {
+    if (!customerId) return;
+
+    try {
+        const response = await fetch(`/support/chat/history?customerId=${customerId}`);
+        const history = await response.json();
+
+        // Clear chat
+        chatMessages.innerHTML = '<div class="chat-messages-inner"></div>'; // Reset container
+        messageCount = 0;
+
+        if (history && history.length > 0) {
+            history.forEach(msg => {
+                const type = msg.messageType === 'USER' ? 'user' : 'bot';
+                // Handle different field names from backend (text vs content)
+                const content = msg.content || msg.text || "";
+                if (content) {
+                    addMessage(type, content, false); // false = don't scroll on every msg load
+                }
+            });
+            // Scroll to bottom after loading all
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        } else {
+            // If no history, show welcome message personalized
+            const customerName = document.getElementById('customerSelect').options[document.getElementById('customerSelect').selectedIndex].text.split(' (')[0];
+            addMessage('bot', `👋 Hello, ${customerName}! I can seeyour detailed profile. How can I help you today?`);
+        }
+
+        document.getElementById('messageCount').textContent = messageCount;
+
+    } catch (error) {
+        console.error('Failed to load history:', error);
+    }
+}
+
 // Send message (Streaming)
 async function sendMessage() {
     const message = messageInput.value.trim();
@@ -157,7 +197,13 @@ async function sendMessage() {
 
             try {
                 const data = JSON.parse(event.data);
-                const token = data.content || "";
+
+                // Handle Sentiment Event
+                if (data.sentiment) {
+                    updateSentiment(data.sentiment);
+                }
+
+                const token = data.content || data.text || "";
 
                 fullText += token; // JSON preserves whitespace!
                 contentDiv.innerHTML = marked.parse(fullText);
@@ -206,7 +252,7 @@ function quickQuestion(question) {
 }
 
 // Add message to chat
-function addMessage(type, content) {
+function addMessage(type, content, autoScroll = true) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${type}-message`;
 
@@ -220,8 +266,13 @@ function addMessage(type, content) {
         <div class="message-content">${htmlContent}</div>
     `;
 
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    // Append to inner container if exists, else direct
+    const inner = chatMessages.querySelector('.chat-messages-inner') || chatMessages;
+    inner.appendChild(messageDiv);
+
+    if (autoScroll) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 
     messageCount++;
     document.getElementById('messageCount').textContent = messageCount;

@@ -76,6 +76,17 @@ public class SupportChatController {
     }
 
     /**
+     * Get chat history.
+     */
+    @GetMapping("/chat/history")
+    public ResponseEntity<java.util.List<org.springframework.ai.chat.messages.Message>> getChatHistory(
+            @RequestParam(required = false) String customerId,
+            @RequestParam(required = false) String sessionId) {
+
+        return ResponseEntity.ok(supportBotService.getChatHistory(customerId, sessionId));
+    }
+
+    /**
      * Health check endpoint.
      */
     @GetMapping("/health")

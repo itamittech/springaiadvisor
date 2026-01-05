@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class SupportBotService {
 
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(SupportBotService.class);
+
     private final ChatClient chatClient;
     private final KnowledgeBaseService knowledgeBaseService;
 
@@ -32,6 +34,7 @@ public class SupportBotService {
     private final SentimentAnalysisAdvisor sentimentAdvisor;
     private final ResponseFormattingAdvisor formattingAdvisor;
     private final MessageChatMemoryAdvisor memoryAdvisor;
+    private final org.springframework.ai.chat.memory.ChatMemory chatMemory; // Direct access for history retrieval
 
     // Tools (Agentic AI)
     private final TicketTools ticketTools;
@@ -44,7 +47,8 @@ public class SupportBotService {
             SentimentAnalysisAdvisor sentimentAdvisor,
             TicketTools ticketTools,
             ResponseFormattingAdvisor formattingAdvisor,
-            @Qualifier("supportBotMemoryAdvisor") MessageChatMemoryAdvisor memoryAdvisor) {
+            @Qualifier("supportBotMemoryAdvisor") MessageChatMemoryAdvisor memoryAdvisor,
+            @Qualifier("supportBotChatMemory") org.springframework.ai.chat.memory.ChatMemory chatMemory) {
 
         this.chatClient = chatClientBuilder.build();
         this.knowledgeBaseService = knowledgeBaseService;
@@ -54,6 +58,7 @@ public class SupportBotService {
         this.ticketTools = ticketTools;
         this.formattingAdvisor = formattingAdvisor;
         this.memoryAdvisor = memoryAdvisor;
+        this.chatMemory = chatMemory;
     }
 
     /**
@@ -80,20 +85,27 @@ public class SupportBotService {
         }
 
         // Determine conversation ID for memory
-        String conversationId = request.sessionId() != null ? request.sessionId()
-                : (request.customerId() != null ? "customer-" + request.customerId() : "anonymous");
+        // Determine conversation ID for memory
+        // PRIORITIZE Customer ID for persistence across sessions
+        String conversationId = (request.customerId() != null && !request.customerId().isEmpty())
+                ? "customer-" + request.customerId()
+                : (request.sessionId() != null ? request.sessionId() : "anonymous");
+
+        logger.info("Chat Request - CustomerID: {}, SessionID: {}, Generated ConversationID: {}",
+                request.customerId(), request.sessionId(), conversationId);
 
         // Execute chat with full advisor chain + TOOLS
         String content = chatClient.prompt()
                 .system(enhancedSystemPrompt)
                 .user(request.message())
+                // Ensure ID is set BEFORE advisors run
+                .advisors(a -> a.param("chat_memory_conversation_id", conversationId))
                 // Advisor chain
                 .advisors(safetyAdvisor) // 1. Safety check
                 .advisors(customerContextAdvisor) // 2. Customer personalization
                 .advisors(sentimentAdvisor) // 3. Sentiment analysis
                 .advisors(memoryAdvisor) // 4. Chat memory
                 .advisors(formattingAdvisor) // 5. Response formatting
-                .advisors(a -> a.param("chat_memory_conversation_id", conversationId))
                 // LEVEL 4 AGENTIC UPGRADE: Tools
                 .tools(ticketTools)
                 .call()
@@ -138,21 +150,33 @@ public class SupportBotService {
         if (customerId != null) {
             customerContextAdvisor.setCustomerId(customerId);
         }
-        String conversationId = request.sessionId() != null ? request.sessionId()
-                : (request.customerId() != null ? "customer-" + request.customerId() : "anonymous");
+        String conversationId = (request.customerId() != null && !request.customerId().isEmpty())
+                ? "customer-" + request.customerId()
+                : (request.sessionId() != null ? request.sessionId() : "anonymous");
 
-        // Stream response as JSON objects to preserve whitespace in SSE
-        return chatClient.prompt()
+        // 1. Analyze Sentiment immediately (Stateless)
+        SentimentType sentiment = sentimentAdvisor.analyzeSentiment(request.message());
+
+        // 2. Create Sentiment Event Flux
+        reactor.core.publisher.Flux<java.util.Map<String, String>> sentimentFlux = reactor.core.publisher.Flux
+                .just(java.util.Collections.singletonMap("sentiment", sentiment.name()));
+
+        // 3. Create Chat Stream Flux
+        reactor.core.publisher.Flux<java.util.Map<String, String>> chatFlux = chatClient.prompt()
                 .system(enhancedSystemPrompt)
                 .user(request.message())
+                // Ensure ID is set BEFORE advisors run
+                .advisors(a -> a.param("chat_memory_conversation_id", conversationId))
                 .advisors(safetyAdvisor)
                 .advisors(customerContextAdvisor)
-                // Note: Sentiment & Ticket tools might not work fully in stream mode
-                // depending on Spring AI version, but core text will stream.
-                .advisors(a -> a.param("chat_memory_conversation_id", conversationId))
+                .advisors(memoryAdvisor)
+                .tools(ticketTools) // Enable Tools!
                 .stream()
                 .content()
                 .map(content -> java.util.Collections.singletonMap("content", content));
+
+        // 4. Concat: Sentiment first, then content
+        return reactor.core.publisher.Flux.concat(sentimentFlux, chatFlux);
     }
 
     public String simpleChat(String message) {
@@ -164,6 +188,22 @@ public class SupportBotService {
      */
     public ChatResponse chatWithCustomer(String message, Long customerId) {
         return chat(new ChatRequest(message, String.valueOf(customerId), null));
+    }
+
+    /**
+     * Retrieves chat history for a given customer or session.
+     */
+    public java.util.List<org.springframework.ai.chat.messages.Message> getChatHistory(String customerId,
+            String sessionId) {
+        String conversationId = (customerId != null && !customerId.isEmpty())
+                ? "customer-" + customerId
+                : (sessionId != null ? sessionId : "anonymous");
+
+        java.util.List<org.springframework.ai.chat.messages.Message> history = chatMemory.get(conversationId);
+        logger.info("Get History - CustomerID: {}, SessionID: {}, conversationId: {}, History Size: {}",
+                customerId, sessionId, conversationId, history.size());
+
+        return history; // Retrieve messages
     }
 
     /**

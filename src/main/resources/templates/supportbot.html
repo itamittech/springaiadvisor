@@ -6,9 +6,153 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TaskFlow Support Bot</title>
     <link rel="stylesheet" href="/css/supportbot.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!-- Marked.js for Markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">✨</span>
+                    <span class="logo-text">TaskFlow AI</span>
+                </div>
+            </div>
+
+            <div class="scrollable-content">
+                <!-- Customer Selection -->
+                <div class="customer-section">
+                    <h3>Customer Profile</h3>
+                    <select id="customerSelect" class="customer-select">
+                        <option value="">Select a User...</option>
+                        <option th:each="customer : ${customers}" th:value="${customer.id()}"
+                            th:text="${customer.name() + ' (' + customer.plan().getDisplayName() + ')'}">
+                        </option>
+                    </select>
+                    <div id="customerInfo" class="customer-info-card hidden">
+                        <div class="info-row">
+                            <span class="label">Email</span>
+                            <span id="customerEmail" class="value">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Plan</span>
+                            <span id="customerPlan" class="value">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Company</span>
+                            <span id="customerCompany" class="value">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <h3>Quick Actions</h3>
+                    <div class="action-grid">
+                        <button class="action-btn" onclick="quickQuestion('How do I reset my password?')">
+                            <span>🔐</span> Password Reset
+                        </button>
+                        <button class="action-btn" onclick="quickQuestion('What are the pricing plans?')">
+                            <span>💰</span> Pricing Info
+                        </button>
+                        <button class="action-btn" onclick="quickQuestion('The app is not loading')">
+                            <span>🔧</span> Troubleshoot
+                        </button>
+                        <button class="action-btn" onclick="quickQuestion('How do I integrate with Slack?')">
+                            <span>🔗</span> Integrations
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Session Info -->
+                <div class="session-info">
+                    <h3>Current Session</h3>
+                    <div class="stat-row">
+                        <span>Messages</span>
+                        <span id="messageCount">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Sentiment</span>
+                        <span id="currentSentiment">😐</span>
+                    </div>
+                    <button class="clear-btn" onclick="clearChat()">🗑️ Clear History</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-container">
+            <header class="chat-header">
+                <div class="chat-title">
+                    <h2>Support Assistant</h2>
+                    <p>Online & Ready</p>
+                </div>
+            </header>
+
+            <div id="chatMessages" class="chat-messages">
+                <div class="chat-messages-inner">
+                    <!-- Welcome Message -->
+                    <div class="message bot-message">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-content">
+                            <p><strong>Hello! I'm TaskFlow's AI Assistant.</strong></p>
+                            <p>I can help you with account issues, technical troubleshooting, or billing inquiries.</p>
+                            <p>Select a user profile on the left to get started, or just ask me anything!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typing Indicator (Hidden by default) -->
+            <div id="typingIndicator" class="typing-indicator hidden">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="chat-input-container">
+                <div class="input-wrapper">
+                    <textarea id="messageInput" class="chat-input" placeholder="Type your message..."
+                        rows="1"></textarea>
+                    <button id="sendBtn" class="send-btn" onclick="sendMessage()" disabled>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Panel - Tickets -->
+        <aside class="tickets-panel">
+            <div class="panel-header">
+                <h2>Active Tickets</h2>
+                <button class="refresh-btn" onclick="loadTickets()" title="Refresh Tickets">🔄</button>
+            </div>
+
+            <div id="ticketsList" class="tickets-list">
+                <div class="empty-state"
+                    style="padding: 1rem; color: var(--text-muted); text-align: center; font-size: 13px;">
+                    <p>No active tickets found.</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script src="/js/supportbot.js"></script>
+</body>
+
+</html>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Marked.js for Markdown rendering -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 
 <body>
@@ -82,47 +226,52 @@
         <!-- Main Chat Area -->
         <main class="chat-container">
             <header class="chat-header">
-                <h1>💬 TaskFlow Support Chat</h1>
-                <p>Ask me anything about TaskFlow! I can help with features, billing, troubleshooting, and more.</p>
+                <div class="chat-title">
+                    <h2>💬 TaskFlow Support Chat</h2>
+                    <p>Always here to help.</p>
+                </div>
             </header>
 
             <div id="chatMessages" class="chat-messages">
-                <!-- Welcome Message -->
-                <div class="message bot-message">
-                    <div class="message-avatar">🤖</div>
-                    <div class="message-content">
-                        <p>👋 <strong>Welcome to TaskFlow Support!</strong></p>
-                        <p>I'm your AI assistant, here to help you with:</p>
-                        <ul>
-                            <li>📚 Product features and usage</li>
-                            <li>💳 Billing and subscription questions</li>
-                            <li>🔧 Troubleshooting and technical issues</li>
-                            <li>🔗 Integrations and API help</li>
-                        </ul>
-                        <p>How can I assist you today?</p>
+                <div class="chat-messages-inner">
+                    <!-- Welcome Message -->
+                    <div class="message bot-message">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-content">
+                            <p>👋 <strong>Welcome to TaskFlow Support!</strong></p>
+                            <p>I'm your AI assistant, here to help you with:</p>
+                            <ul>
+                                <li>📚 Product features and usage</li>
+                                <li>💳 Billing and subscription questions</li>
+                                <li>🔧 Troubleshooting and technical issues</li>
+                                <li>🔗 Integrations and API help</li>
+                            </ul>
+                            <p>How can I assist you today?</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Typing Indicator -->
+            <!-- Typing Indicator (Hidden by default) -->
             <div id="typingIndicator" class="typing-indicator hidden">
-                <div class="message-avatar">🤖</div>
-                <div class="typing-dots">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
             </div>
 
             <!-- Input Area -->
             <div class="chat-input-container">
-                <textarea id="messageInput" class="chat-input"
-                    placeholder="Type your message here... (Press Enter to send, Shift+Enter for new line)"
-                    rows="1"></textarea>
-                <button id="sendBtn" class="send-btn" onclick="sendMessage()">
-                    <span>Send</span>
-                    <span class="send-icon">➤</span>
-                </button>
+                <div class="input-wrapper">
+                    <textarea id="messageInput" class="chat-input" placeholder="Message TaskFlow Support..."
+                        rows="1"></textarea>
+                    <button id="sendBtn" class="send-btn" onclick="sendMessage()" disabled>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </main>
 

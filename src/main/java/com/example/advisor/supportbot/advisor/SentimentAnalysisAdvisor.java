@@ -108,7 +108,10 @@ public class SentimentAnalysisAdvisor implements CallAdvisor, StreamAdvisor {
     /**
      * Analyzes the sentiment of the user message.
      */
-    private SentimentType analyzeSentiment(String message) {
+    /**
+     * Analyzes the sentiment of the user message.
+     */
+    public SentimentType analyzeSentiment(String message) {
         // Check for angry sentiment first (highest priority)
         if (containsAny(message, ANGRY_WORDS)) {
             return SentimentType.ANGRY;
