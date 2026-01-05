@@ -36,7 +36,7 @@ public class SupportChatController {
      * Uses Server-Sent Events (SSE) to push tokens.
      */
     @GetMapping(value = "/stream", produces = org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE)
-    public reactor.core.publisher.Flux<String> streamChat(
+    public reactor.core.publisher.Flux<java.util.Map<String, String>> streamChat(
             @RequestParam String message,
             @RequestParam(required = false) String customerId,
             @RequestParam(required = false) String sessionId) {

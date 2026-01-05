@@ -120,9 +120,9 @@ public class SupportBotService {
 
     /**
      * STREAMING chat handler (Level 4.5).
-     * Returns a Flux<String> for real-time token streaming.
+     * Returns a Flux<Map<String, String>> for real-time token streaming.
      */
-    public reactor.core.publisher.Flux<String> streamChat(ChatRequest request) {
+    public reactor.core.publisher.Flux<java.util.Map<String, String>> streamChat(ChatRequest request) {
         // Get RAG context from knowledge base
         String context = knowledgeBaseService.getContextForQuery(request.message(), 3);
         String category = knowledgeBaseService.categorizeQuery(request.message());
@@ -141,7 +141,7 @@ public class SupportBotService {
         String conversationId = request.sessionId() != null ? request.sessionId()
                 : (request.customerId() != null ? "customer-" + request.customerId() : "anonymous");
 
-        // Stream response
+        // Stream response as JSON objects to preserve whitespace in SSE
         return chatClient.prompt()
                 .system(enhancedSystemPrompt)
                 .user(request.message())
@@ -151,7 +151,8 @@ public class SupportBotService {
                 // depending on Spring AI version, but core text will stream.
                 .advisors(a -> a.param("chat_memory_conversation_id", conversationId))
                 .stream()
-                .content();
+                .content()
+                .map(content -> java.util.Collections.singletonMap("content", content));
     }
 
     public String simpleChat(String message) {

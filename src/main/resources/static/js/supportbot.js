@@ -155,15 +155,18 @@ async function sendMessage() {
             // Hide typing indicator on first token
             showTyping(false);
 
-            const token = event.data;
-            // Handle newlines in SSE (often sent as literal \n or separate events)
-            // Spring AI sends raw tokens.
+            try {
+                const data = JSON.parse(event.data);
+                const token = data.content || "";
 
-            fullText += token.replace(/\\n/g, '\n'); // Simple unescape if needed
-            contentDiv.innerHTML = marked.parse(fullText);
+                fullText += token; // JSON preserves whitespace!
+                contentDiv.innerHTML = marked.parse(fullText);
 
-            // Scroll to bottom
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } catch (e) {
+                console.error("Error parsing SSE data:", e);
+            }
         };
 
         eventSource.onerror = (error) => {
