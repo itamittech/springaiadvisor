@@ -12,6 +12,12 @@ This project demonstrates Spring AI Advisors and Chat Memory capabilities throug
 ./mvnw spring-boot:run
 ```
 
+## using the UI
+Open your browser and navigate to:
+[http://localhost:8080](http://localhost:8080)
+
+This provides a modern, premium web interface to interact with all 4 advisor exercises.
+
 ## Exercises
 
 ### Exercise 1: The "Elephant" Bot (In-Memory)

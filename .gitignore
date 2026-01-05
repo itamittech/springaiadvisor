@@ -35,3 +35,5 @@ target/
 .env
 .env.local
 .env.*
+.DS_Store
+Thumbs.db
