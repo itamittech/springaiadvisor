@@ -13,11 +13,24 @@ import reactor.core.publisher.Flux;
 import java.util.List;
 
 /**
- * Safety advisor that filters inappropriate content and prevents
- * disclosure of sensitive internal information.
+ * 🛡️ SAFETY ADVISOR (Order: 0)
  * 
- * This advisor runs BEFORE the LLM call to filter user input,
- * and can block requests containing prohibited content.
+ * @learning PATTERN: SHORT-CIRCUIT
+ *           This advisor demonstrates how to block a request from ever reaching
+ *           the LLM.
+ * 
+ *           WHY IS THIS IMPORTANT?
+ *           1. **Cost Savings**: We don't pay for tokens if the request is
+ *           blocked locally.
+ *           2. **Security**: Prevents jailbreaking or abuse before it starts.
+ *           3. **Latency**: "Bad" requests get an instant NACK response (0ms
+ *           latency).
+ * 
+ *           IMPLEMENTATION DETAILS:
+ *           - We implement `CallAdvisor` to intercept the request chain.
+ *           - If validation fails, we return a `ChatClientResponse` immediately
+ *           (without calling `chain.nextCall()`).
+ *           - If validation passes, we delegate to the next link in the chain.
  */
 public class SupportSafetyAdvisor implements CallAdvisor, StreamAdvisor {
 

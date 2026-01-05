@@ -47,8 +47,58 @@ When the AI can't help, we need a fallback.
 
 ## 🧠 Phase 2: The Brain (Custom Advisors)
 
-This is the most powerful part of Spring AI. Advisors are like *middleware* or *interceptors* for LLM calls.
+This is the most powerful part of Spring AI. Advisors are like *middleware* or *interceptors* for### High-Level Flow
 
+```mermaid
+sequenceDiagram
+    participant User
+    participant Safety as SafetyAdvisor (0)
+    participant Context as ContextAdvisor (10)
+    participant Sentiment as SentimentAdvisor (20)
+    participant Escalation as EscalationAdvisor (30)
+    participant RAG as KnowledgeBase
+    participant LLM as OpenAI GPT-4o
+    participant UI as Web Interface
+
+    User->>Safety: Send Message
+    
+    rect rgb(255, 200, 200)
+        Note over Safety: 1. Safety Check
+        Safety->>Safety: Check for blocked words
+    end
+    
+    Safety->>Context: Safe Request
+    
+    rect rgb(200, 255, 200)
+        Note over Context: 2. Personalization
+        Context->>Context: Inject Customer Plan (Free/Premium)
+    end
+    
+    Context->>Sentiment: Request + Context
+    
+    rect rgb(200, 200, 255)
+        Note over Sentiment: 3. Analysis
+        Sentiment->>Sentiment: Detect Mood (Angry?)
+    end
+    
+    Sentiment->>Escalation: Request + Sentiment
+    
+    rect rgb(255, 255, 200)
+        Note over Escalation: 4. Action
+        alt Trigger found (e.g. "Refund")
+            Escalation->>Escalation: Create Ticket in DB
+        end
+    end
+    
+    Escalation->>RAG: Query
+    RAG-->>Escalation: Relevant Docs
+    
+    Escalation->>LLM: Final Prompt (System + Docs + User Data)
+    LLM-->>UI: Response
+    
+    Note over UI: 5. Update UI
+    UI->>UI: Show Response + Sentiment Emoji
+```
 ### 🛡️ 1. Safety Advisor (`SupportSafetyAdvisor.java`)
 **Goal:** Prevent liability and abuse.
 - **Mechanism:** Implements `CallAdvisor`.

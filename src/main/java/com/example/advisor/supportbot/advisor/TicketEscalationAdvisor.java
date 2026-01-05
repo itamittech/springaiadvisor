@@ -18,11 +18,29 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Advisor that detects escalation requests and auto-creates support tickets.
- * When a customer asks to speak to a human, requests a manager, or mentions
- * refund/cancel, a high-priority ticket is automatically created.
+ * 🎫 TICKET ESCALATION ADVISOR (Order: 30)
  * 
- * This advisor runs BEFORE the LLM call but AFTER sentiment analysis.
+ * @learning PATTERN: SIDE-EFFECT / ACTION TRIGGER
+ *           This advisor demonstrates how to trigger external actions (Database
+ *           Writes) based on conversation triggers.
+ * 
+ *           WHY IS THIS IMPORTANT?
+ *           1. **Automation**: Converts "talk" into "action" (creating a
+ *           ticket).
+ *           2. **Transparency**: The LLM needs to know that a ticket *was*
+ *           created so it can tell the user.
+ * 
+ *           NOTE ON MODERN AI:
+ *           Currently, this uses **Regex/Keyword Matching** (Rule-Based).
+ *           In **Level 4 (Agents)**, we will refactor this to use **Function
+ *           Calling (@Tool)**,
+ *           where the LLM *decides* to call `createTicket()` itself.
+ * 
+ *           IMPLEMENTATION DETAILS:
+ *           - Scans message for trigger words ("refund", "manager").
+ *           - If triggered, calls `ticketRepository.save()`.
+ *           - Injects a "System Message" into the prompt telling the LLM: "A
+ *           ticket has been created... inform the user."
  */
 public class TicketEscalationAdvisor implements CallAdvisor, StreamAdvisor {
 

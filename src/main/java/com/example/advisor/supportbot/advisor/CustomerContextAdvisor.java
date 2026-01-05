@@ -18,12 +18,26 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Advisor that injects customer context into the system prompt.
- * This personalizes responses based on the customer's profile, plan, and
- * history.
+ * 👤 CUSTOMER CONTEXT ADVISOR (Order: 10)
  * 
- * This advisor runs BEFORE the LLM call to enhance the prompt with customer
- * data.
+ * @learning PATTERN: PROMPT INJECTION (RAG-Lite)
+ *           This advisor demonstrates how to dynamically inject database data
+ *           into the System Prompt.
+ * 
+ *           WHY IS THIS IMPORTANT?
+ *           1. **Personalization**: The LLM "knows" who the user is (Plan,
+ *           Name, History).
+ *           2. **Context Window Efficiency**: We only inject relevant user
+ *           data, not the whole DB.
+ *           3. **Decoupling**: The ChatClient doesn't need to know about the
+ *           User DB; this advisor handles the lookup.
+ * 
+ *           IMPLEMENTATION DETAILS:
+ *           - We retrieve the `customerId` from the Advisor Context (passed at
+ *           runtime).
+ *           - We look up the Customer entity from the H2 database.
+ *           - We perform **Prompt Engineering** by appending a "System
+ *           Extension" to the prompt.
  */
 public class CustomerContextAdvisor implements CallAdvisor, StreamAdvisor {
 

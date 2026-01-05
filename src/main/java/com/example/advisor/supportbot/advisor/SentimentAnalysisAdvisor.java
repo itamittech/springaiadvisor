@@ -12,10 +12,26 @@ import reactor.core.publisher.Flux;
 import java.util.List;
 
 /**
- * Advisor that analyzes customer message sentiment.
- * This helps identify frustrated customers who may need priority attention.
+ * 📊 SENTIMENT ANALYSIS ADVISOR (Order: 20)
  * 
- * This advisor runs BEFORE the LLM call to analyze sentiment and log it.
+ * @learning PATTERN: STATEFUL ADVISOR + METADATA EXTRACTION
+ *           This advisor demonstrates how to analyze the interaction and store
+ *           state *outside* the LLM response.
+ * 
+ *           WHY IS THIS IMPORTANT?
+ *           1. **Metadata**: We don't just want text back; we want to know
+ *           *how* the user feels.
+ *           2. **Statefulness**: This advisor holds state (`lastSentiment`)
+ *           that can be queried by other components (like the UI).
+ *           3. **Shadow Logic**: It runs analysis *in parallel* (conceptually)
+ *           to the main chat flow.
+ * 
+ *           IMPLEMENTATION DETAILS:
+ *           - It inspects the `userMessage` using keyword matching (could use a
+ *           separate small LLM call).
+ *           - It updates a `lastDetectedSentiment` field.
+ *           - The `SupportBotService` queries this advisor *after* the call to
+ *           get the sentiment for the UI.
  */
 public class SentimentAnalysisAdvisor implements CallAdvisor, StreamAdvisor {
 

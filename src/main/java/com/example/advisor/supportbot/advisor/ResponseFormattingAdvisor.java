@@ -11,11 +11,23 @@ import org.springframework.ai.chat.client.advisor.api.StreamAdvisorChain;
 import reactor.core.publisher.Flux;
 
 /**
- * Advisor that ensures responses are professionally formatted.
- * This advisor runs AFTER the LLM call to log the response.
+ * 📝 RESPONSE FORMATTING ADVISOR (Order: 1000)
  * 
- * Note: In Spring AI 1.1.2, we cannot modify the response after the LLM call,
- * so this advisor mainly logs the response for analytics.
+ * @learning PATTERN: POST-PROCESSING & OBSERVABILITY
+ *           This advisor runs *after* the LLM response to log metrics or format
+ *           output.
+ * 
+ *           WHY IS THIS IMPORTANT?
+ *           1. **Observability**: We can log token usage, latency, and response
+ *           content for debugging.
+ *           2. **Standardization**: Ensure the output format matches what the
+ *           frontend expects (e.g., Markdown).
+ * 
+ *           IMPLEMENTATION DETAILS:
+ *           - It has the highest Order (1000), meaning it wraps the *entire*
+ *           inner chain.
+ *           - It inspects the `ChatClientResponse` coming *back* from the
+ *           chain.
  */
 public class ResponseFormattingAdvisor implements CallAdvisor, StreamAdvisor {
 
