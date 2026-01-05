@@ -6,7 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
             memory: [],
             user: [],
             persistent: [],
-            window: []
+            window: [],
+            rag: [],
+            safety: [],
+            logging: []
         }
     };
 
@@ -22,14 +25,14 @@ document.addEventListener('DOMContentLoaded', () => {
     tabLinks.forEach(tab => {
         tab.addEventListener('click', (e) => {
             e.preventDefault();
-            
+
             // UI Updates
             tabLinks.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-            
+
             // Logic Updates
             state.activeTab = tab.dataset.tab;
-            
+
             // User ID Visibility
             if (state.activeTab === 'user') {
                 userIdContainer.style.display = 'flex';
@@ -83,6 +86,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'window':
                 url = `/advisor/chat/window?message=${encodeURIComponent(message)}`;
+                break;
+            case 'rag':
+                url = `/advisor/chat/rag?message=${encodeURIComponent(message)}`;
+                break;
+            case 'safety':
+                url = `/advisor/chat/safety?message=${encodeURIComponent(message)}`;
+                break;
+            case 'logging':
+                url = `/advisor/chat/logging?message=${encodeURIComponent(message)}`;
                 break;
         }
 

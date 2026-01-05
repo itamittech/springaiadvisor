@@ -1,0 +1,26 @@
+MARS COLONIZATION GUIDE: 2040 EDITION
+
+1. ATMOSPHERE & BREATHING
+The Martian atmosphere is 95% carbon dioxide. It is too thin to breathe (approx 1% of Earth's pressure).
+Colonists must ideally wear pressurized EVA suits outside. Inside the habitat, we use MOXIE-style oxygen generators that convert CO2 into O2.
+
+2. WATER RESOURCES
+Water is primarily harvested from subsurface ice deposits found at the poles and mid-latitudes.
+Recycling is critical: The W.A.T.E.R. system (Waste Analysis and Treatment for Environmental Recovery) recovers 98% of all water from sweat, urine, and humidity.
+
+3. FOOD PRODUCTION
+The Martian soil (regolith) is toxic due to perchlorates. It must be washed and treated with bacteria before planting.
+Aeroponics and hydroponics are the primary farming methods. Genetically modified potatoes, algae, and insect protein (crickets) form the staple diet.
+
+4. RADIATION SHIELDING
+Mars lacks a global magnetic field, exposing the surface to solar and cosmic radiation.
+Habitats are built either underground (lava tubes) or 3D-printed using regolith concrete with a thickness of at least 2 meters. Water tanks are often stored in the roof to provide extra shielding.
+
+5. COMMUNICATION
+Communication delay with Earth ranges from 3 to 22 minutes depending on planetary alignment.
+Real-time phone calls are impossible. All communication is asynchronous (email, voice messages, video logs). The "Interplanetary Internet" uses Disruption-Tolerant Networking (DTN).
+
+6. DAILY LIFE
+A Martian day (Sol) is 24 hours and 39 minutes.
+Gravity is 38% of Earth's. Use caution when lifting heavy objects; inertia remains the same even if weight is less.
+Exercise for 2 hours daily is mandatory to prevent bone density loss and muscle atrophy.

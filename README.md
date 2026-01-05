@@ -1,6 +1,6 @@
 # Advisor Assignments
 
-This project demonstrates Spring AI Advisors and Chat Memory capabilities through 4 exercises.
+This project demonstrates Spring AI Advisors and Chat Memory capabilities through 7 exercises.
 
 ## Prerequisites
 - Java 21
@@ -16,7 +16,7 @@ This project demonstrates Spring AI Advisors and Chat Memory capabilities throug
 Open your browser and navigate to:
 [http://localhost:8080](http://localhost:8080)
 
-This provides a modern, premium web interface to interact with all 4 advisor exercises.
+This provides a modern, premium web interface to interact with all 7 advisor exercises.
 
 ## Exercises
 
@@ -80,6 +80,36 @@ curl "http://localhost:8080/advisor/chat/window?message=4"
 
 # Ask what was the first message (should ideally be forgotten if window is small enough, though 3 exchanges is 6 messages usually)
 curl "http://localhost:8080/advisor/chat/window?message=What%20was%20the%20first%20thing%20I%20said?"
+```
+
+### Exercise 5: RAG (Question Answering)
+Uses Retrieval Augmented Generation to answer questions based on a specific "Mars Colonization Guide" document.
+
+**Test:**
+```bash
+# Ask about Mars
+curl "http://localhost:8080/advisor/chat/rag?message=How%20do%20we%20breathe%20on%20Mars?"
+```
+
+### Exercise 6: Content Safety
+Uses `SafeGuardAdvisor` to block sensitive or inappropriate content.
+
+**Test:**
+```bash
+# Safe Message
+curl "http://localhost:8080/advisor/chat/safety?message=Hello"
+
+# Unsafe Message (Blocked)
+curl "http://localhost:8080/advisor/chat/safety?message=This%20place%20is%20scary"
+```
+
+### Exercise 7: Logging
+Uses `SimpleLoggerAdvisor` to log requests and responses to the console for observability.
+
+**Test:**
+```bash
+curl "http://localhost:8080/advisor/chat/logging?message=Test%20Logging"
+# Check console output for logs
 ```
 
 ## Technical Implementation Notes
