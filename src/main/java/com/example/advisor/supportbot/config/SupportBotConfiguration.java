@@ -72,13 +72,17 @@ public class SupportBotConfiguration {
 
     /**
      * Ticket escalation advisor for auto-creating tickets.
+     * 
+     * @deprecated Replaced by TicketTools (Agentic AI) in Level 4.
      */
-    @Bean
-    public TicketEscalationAdvisor ticketEscalationAdvisor(
-            TicketRepository ticketRepository,
-            CustomerRepository customerRepository) {
-        return new TicketEscalationAdvisor(ticketRepository, customerRepository);
-    }
+    /*
+     * @Bean
+     * public TicketEscalationAdvisor ticketEscalationAdvisor(
+     * TicketRepository ticketRepository,
+     * CustomerRepository customerRepository) {
+     * return new TicketEscalationAdvisor(ticketRepository, customerRepository);
+     * }
+     */
 
     /**
      * Response formatting advisor for professional output.

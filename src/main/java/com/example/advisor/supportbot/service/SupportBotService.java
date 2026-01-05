@@ -3,7 +3,7 @@ package com.example.advisor.supportbot.service;
 import com.example.advisor.supportbot.advisor.*;
 import com.example.advisor.supportbot.model.dto.ChatRequest;
 import com.example.advisor.supportbot.model.dto.ChatResponse;
-import com.example.advisor.supportbot.model.entity.Ticket;
+import com.example.advisor.supportbot.tool.TicketTools;
 import com.example.advisor.supportbot.model.enums.SentimentType;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -42,9 +42,11 @@ public class SupportBotService {
     private final SupportSafetyAdvisor safetyAdvisor;
     private final CustomerContextAdvisor customerContextAdvisor;
     private final SentimentAnalysisAdvisor sentimentAdvisor;
-    private final TicketEscalationAdvisor escalationAdvisor;
     private final ResponseFormattingAdvisor formattingAdvisor;
     private final MessageChatMemoryAdvisor memoryAdvisor;
+
+    // Tools (Agentic AI)
+    private final TicketTools ticketTools;
 
     public SupportBotService(
             ChatClient.Builder chatClientBuilder,
@@ -52,7 +54,7 @@ public class SupportBotService {
             SupportSafetyAdvisor safetyAdvisor,
             CustomerContextAdvisor customerContextAdvisor,
             SentimentAnalysisAdvisor sentimentAdvisor,
-            TicketEscalationAdvisor escalationAdvisor,
+            TicketTools ticketTools,
             ResponseFormattingAdvisor formattingAdvisor,
             @Qualifier("supportBotMemoryAdvisor") MessageChatMemoryAdvisor memoryAdvisor) {
 
@@ -61,7 +63,7 @@ public class SupportBotService {
         this.safetyAdvisor = safetyAdvisor;
         this.customerContextAdvisor = customerContextAdvisor;
         this.sentimentAdvisor = sentimentAdvisor;
-        this.escalationAdvisor = escalationAdvisor;
+        this.ticketTools = ticketTools;
         this.formattingAdvisor = formattingAdvisor;
         this.memoryAdvisor = memoryAdvisor;
     }
@@ -85,38 +87,44 @@ public class SupportBotService {
         Long customerId = parseCustomerId(request.customerId());
         if (customerId != null) {
             customerContextAdvisor.setCustomerId(customerId);
-            escalationAdvisor.setCustomerId(customerId);
         }
 
         // Determine conversation ID for memory
         String conversationId = request.sessionId() != null ? request.sessionId()
                 : (request.customerId() != null ? "customer-" + request.customerId() : "anonymous");
 
-        // Execute chat with full advisor chain
+        // Execute chat with full advisor chain + TOOLS
         String content = chatClient.prompt()
                 .system(enhancedSystemPrompt)
                 .user(request.message())
-                // Advisor chain in order of execution
+                // Advisor chain
                 .advisors(safetyAdvisor) // 1. Safety check
                 .advisors(customerContextAdvisor) // 2. Customer personalization
                 .advisors(sentimentAdvisor) // 3. Sentiment analysis
-                .advisors(escalationAdvisor) // 4. Ticket escalation
-                .advisors(memoryAdvisor) // 5. Chat memory
-                .advisors(formattingAdvisor) // 6. Response formatting (runs last)
+                .advisors(memoryAdvisor) // 4. Chat memory
+                .advisors(formattingAdvisor) // 5. Response formatting
                 .advisors(a -> a.param("chat_memory_conversation_id", conversationId))
+                // LEVEL 4 AGENTIC UPGRADE: Tools
+                .tools(ticketTools)
                 .call()
                 .content();
 
-        // Get sentiment and ticket info from advisors
+        // Get sentiment
         SentimentType sentiment = sentimentAdvisor.getLastSentiment();
-        Ticket ticket = escalationAdvisor.getLastCreatedTicket();
+
+        // For tools, we don't manually check "lastCreatedTicket" via advisor anymore.
+        // The LLM tool execution happens internally.
+        // If we wanted to return ticket ID, we'd need to capture tool events or parsing
+        // logs.
+        // For this tutorial, we will rely on the AI's text response confirming the
+        // ticket creation.
 
         return new ChatResponse(
                 content,
                 conversationId,
                 sentiment,
-                ticket != null,
-                ticket != null ? ticket.getId() : null,
+                false, // Ticket created flag strictly via Advisor is deprecated
+                null,
                 java.time.LocalDateTime.now());
     }
 
