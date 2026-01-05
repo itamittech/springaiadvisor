@@ -1,22 +1,37 @@
 package com.example.advisor.controller;
 
-import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.ai.vectorstore.SearchRequest;
-import org.springframework.ai.document.Document;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.SafeGuardAdvisor;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
-import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
+import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * AdvisorAssignmentController demonstrates various Spring AI Chat Advisors.
+ * 
+ * Custom Logging Note:
+ * A dedicated CallAdvisor class (CustomLoggingAdvisor) was planned, but due to
+ * Spring AI 1.1.2 API differences (AdvisedRequest/Response types not
+ * resolvable),
+ * the logging logic is implemented within a private helper method
+ * `logTokenUsage`.
+ * This achieves the same custom logging outcome without the interface
+ * dependency.
+ */
 @RestController
 public class AdvisorAssignmentController {
 
@@ -24,35 +39,29 @@ public class AdvisorAssignmentController {
 
         private final ChatClient chatClient;
         private final ChatMemory inMemoryChatMemory;
-        private final ChatMemory jdbcChatMemory;
-        private final InMemoryChatMemoryRepository sharedRepository = new InMemoryChatMemoryRepository();
+        private final ChatMemory persistentChatMemory;
+        private final InMemoryChatMemoryRepository sharedRepository;
 
         private final VectorStore vectorStore;
-        private final org.springframework.ai.chat.client.advisor.SafeGuardAdvisor safeGuardAdvisor;
-        private final org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor simpleLoggerAdvisor;
+        private final SafeGuardAdvisor safeGuardAdvisor;
 
-        public AdvisorAssignmentController(ChatClient.Builder builder, JdbcChatMemoryRepository jdbcRepository,
+        // For custom feature endpoint
+        private final MessageChatMemoryAdvisor messageChatMemoryAdvisor;
+
+        public AdvisorAssignmentController(ChatClient.Builder builder,
                         VectorStore vectorStore,
-                        org.springframework.ai.chat.client.advisor.SafeGuardAdvisor safeGuardAdvisor,
-                        org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor simpleLoggerAdvisor) {
+                        SafeGuardAdvisor safeGuardAdvisor,
+                        MessageChatMemoryAdvisor messageChatMemoryAdvisor,
+                        @Qualifier("inMemoryChatMemory") ChatMemory inMemoryChatMemory,
+                        @Qualifier("persistentChatMemory") ChatMemory persistentChatMemory,
+                        InMemoryChatMemoryRepository sharedRepository) {
                 this.chatClient = builder.build();
                 this.vectorStore = vectorStore;
                 this.safeGuardAdvisor = safeGuardAdvisor;
-                this.simpleLoggerAdvisor = simpleLoggerAdvisor;
-
-                // Exercise 1 & 2: In-Memory via MessageWindowChatMemory (wrapping repository)
-                this.inMemoryChatMemory = MessageWindowChatMemory.builder()
-                                .chatMemoryRepository(new InMemoryChatMemoryRepository())
-                                .maxMessages(100) // "In-memory bot" - effectively large memory
-                                .build();
-
-                // Exercise 3: Persistent Memory (The "Restart" Test)
-                // We assume JdbcChatMemoryRepository is auto-configured by the starter and
-                // injected here.
-                this.jdbcChatMemory = MessageWindowChatMemory.builder()
-                                .chatMemoryRepository(jdbcRepository)
-                                .maxMessages(100)
-                                .build();
+                this.messageChatMemoryAdvisor = messageChatMemoryAdvisor;
+                this.inMemoryChatMemory = inMemoryChatMemory;
+                this.persistentChatMemory = persistentChatMemory;
+                this.sharedRepository = sharedRepository;
         }
 
         // Exercise 1: The "Elephant" Bot (In-Memory)
@@ -70,8 +79,7 @@ public class AdvisorAssignmentController {
         public String chatUser(@RequestParam String message, @RequestHeader("userId") String userId) {
                 return chatClient.prompt()
                                 .user(message)
-                                .advisors(a -> a
-                                                .param(CHAT_MEMORY_CONVERSATION_ID_KEY, userId))
+                                .advisors(a -> a.param(CHAT_MEMORY_CONVERSATION_ID_KEY, userId))
                                 .advisors(MessageChatMemoryAdvisor.builder(inMemoryChatMemory).build())
                                 .call()
                                 .content();
@@ -82,7 +90,7 @@ public class AdvisorAssignmentController {
         public String chatPersistent(@RequestParam String message) {
                 return chatClient.prompt()
                                 .user(message)
-                                .advisors(MessageChatMemoryAdvisor.builder(jdbcChatMemory).build())
+                                .advisors(MessageChatMemoryAdvisor.builder(persistentChatMemory).build())
                                 .call()
                                 .content();
         }
@@ -90,9 +98,8 @@ public class AdvisorAssignmentController {
         // Exercise 4: The Sliding Window (Cost Optimization)
         @GetMapping("/advisor/chat/window")
         public String chatWindow(@RequestParam String message) {
-                // Exercise 4: Use a small window
                 ChatMemory windowMemory = MessageWindowChatMemory.builder()
-                                .chatMemoryRepository(sharedRepository) // Shared logic
+                                .chatMemoryRepository(sharedRepository)
                                 .maxMessages(6) // 3 exchanges
                                 .build();
 
@@ -106,7 +113,6 @@ public class AdvisorAssignmentController {
         // Exercise 5: RAG (Question Answering)
         @GetMapping("/advisor/chat/rag")
         public String chatRag(@RequestParam String message) {
-                // Manual RAG Implementation
                 List<Document> documents = vectorStore.similaritySearch(
                                 SearchRequest.builder().query(message).topK(2).build());
 
@@ -133,16 +139,71 @@ public class AdvisorAssignmentController {
                                 .content();
         }
 
-        // Exercise 7: Logging
+        // Exercise 7: Logging (Using Custom Helper Method)
         @GetMapping("/advisor/chat/logging")
         public String chatLogging(@RequestParam String message) {
-                // Use SimpleLoggerAdvisor but also append a UI-visible message
-                String response = chatClient.prompt()
-                                .user(message)
-                                .advisors(simpleLoggerAdvisor)
-                                .call()
-                                .content();
+                long startTime = System.currentTimeMillis();
 
-                return response + "\n\n[System Log: Request and Response have been logged to the console using SimpleLoggerAdvisor]";
+                ChatResponse response = chatClient.prompt()
+                                .user(message)
+                                .advisors(new SimpleLoggerAdvisor()) // Simple logger for basic logging
+                                .call()
+                                .chatResponse();
+
+                long duration = System.currentTimeMillis() - startTime;
+                logTokenUsage(response, duration);
+
+                return response.getResult().getOutput().getText()
+                                + "\n\n[System Log: Execution details logged to console]";
+        }
+
+        // Exercise 8: Custom Feature (Combined Advisors + Custom Logging)
+        @GetMapping("/advisor/chat/custom-feature")
+        public String chatCustomFeature(@RequestParam String message) {
+                long startTime = System.currentTimeMillis();
+
+                // 1. RAG Retrieve
+                List<Document> documents = vectorStore.similaritySearch(
+                                SearchRequest.builder().query(message).topK(2).build());
+                String context = documents.stream()
+                                .map(Document::getText)
+                                .collect(Collectors.joining("\n\n"));
+
+                // 2. Call with Persistent Memory Advisor and RAG Context
+                ChatResponse response = chatClient.prompt()
+                                .user(message)
+                                // RAG Context
+                                .system(s -> s.text(
+                                                "You are a helpful assistant. Use the following context to answer the question:\n{context}")
+                                                .param("context", context))
+                                // Persistent Memory
+                                .advisors(messageChatMemoryAdvisor)
+                                .advisors(safeGuardAdvisor)
+                                .call()
+                                .chatResponse();
+
+                long duration = System.currentTimeMillis() - startTime;
+
+                // 3. Custom Logging (Replaces CustomLoggingAdvisor due to API constraints)
+                logTokenUsage(response, duration);
+
+                return response.getResult().getOutput().getText();
+        }
+
+        /**
+         * Private helper method for custom logging of token usage and latency.
+         * This method replaces a dedicated CustomLoggingAdvisor class due to
+         * Spring AI 1.1.2 CallAdvisor interface complexities.
+         */
+        private void logTokenUsage(ChatResponse response, long durationMs) {
+                if (response.getMetadata().getUsage() != null) {
+                        System.out.println("Custom Advisor Log - Tokens: [" +
+                                        "Prompt: " + response.getMetadata().getUsage().getPromptTokens() +
+                                        ", Gen: " + response.getMetadata().getUsage().getCompletionTokens() +
+                                        ", Total: " + response.getMetadata().getUsage().getTotalTokens() +
+                                        "], Duration: " + durationMs + "ms");
+                } else {
+                        System.out.println("Custom Advisor Log - Duration: " + durationMs + "ms (No token usage info)");
+                }
         }
 }

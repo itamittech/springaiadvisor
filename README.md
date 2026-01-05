@@ -1,132 +1,69 @@
-# Advisor Assignments
+# Spring AI Advisor Application
 
-This project demonstrates Spring AI Advisors and Chat Memory capabilities through 7 exercises.
+This project demonstrates various Spring AI features, including memory management, RAG, content safety, and custom advisors.
 
-## Prerequisites
-- Java 21
-- Maven
-- OpenAI API Key configured in `.env` or environment variables.
+## Features
+
+| # | Feature | Description |
+|---|---|---|
+| 1 | **In-Memory** | Conversation history stored in memory |
+| 2 | **Multi-User** | Separate histories per `userId` header |
+| 3 | **Persistent** | H2 database for history across restarts |
+| 4 | **Sliding Window** | Keeps only recent N messages for cost optimization |
+| 5 | **RAG** | Uses Mars Colonization Guide for Q&A |
+| 6 | **Safety** | `SafeGuardAdvisor` filters harmful content |
+| 7 | **Logging** | Custom logging of token usage and duration |
+| 8 | **Custom Feature** | Combined RAG + Persistence + Logging + PromptEnhancer |
 
 ## Running the Application
+
 ```bash
-./mvnw spring-boot:run
+export OPENAI_API_KEY=sk-...
+mvn spring-boot:run
 ```
 
-## using the UI
-Open your browser and navigate to:
-[http://localhost:8080](http://localhost:8080)
+Access the UI at: `http://localhost:8080/`
 
-This provides a modern, premium web interface to interact with all 7 advisor exercises.
+## Screenshots
 
-## Exercises
+### In-Memory Chat
+![In-Memory](docs/screenshots/tab_memory_1767603966631.png)
 
-### Exercise 1: The "Elephant" Bot (In-Memory)
-Stateless bot converted to one that remembers using `InMemoryChatMemory`.
+### Multi-User Sandbox
+![Multi-User](docs/screenshots/tab_user_1767604498759.png)
 
-**Test:**
-```bash
-# Set a fact
-curl "http://localhost:8080/advisor/chat/memory?message=My%20favorite%20color%20is%20blue"
+### Persistent Memory
+![Persistent](docs/screenshots/tab_persistent_1767604619314.png)
 
-# Ask about the fact
-curl "http://localhost:8080/advisor/chat/memory?message=What%20color%20do%20I%20like?"
+### Sliding Window
+![Sliding Window](docs/screenshots/tab_window_1767604850260.png)
+
+### RAG (Mars Guide)
+![RAG](docs/screenshots/tab_rag_1767605419853.png)
+
+### Custom Feature (Advisor Chain)
+![Custom Feature](docs/screenshots/custom_feature_demo_final_1767603638997.png)
+
+## Endpoints
+
+| Endpoint | Description |
+|---|---|
+| `/advisor/chat/memory` | In-Memory Bot |
+| `/advisor/chat/user` | Multi-User Bot |
+| `/advisor/chat/persistent` | Persistent Memory Bot |
+| `/advisor/chat/window` | Sliding Window Bot |
+| `/advisor/chat/rag` | RAG Bot (Mars Guide) |
+| `/advisor/chat/safety` | Safety Advisor Bot |
+| `/advisor/chat/logging` | Logging Advisor Bot |
+| `/advisor/chat/custom-feature` | Combined Feature Bot |
+
+## Custom Advisors
+
+### PromptEnhancerAdvisor (Spring AOP)
+Automatically appends "Please format your response with clear bullet points" to all prompts in the Custom Feature endpoint.
+
+### Custom Logging
+Logs token usage to console:
 ```
-
-### Exercise 2: The Multi-User Sandbox
-Ensures User A's secrets don't leak to User B using `userId`.
-
-**Test:**
-```bash
-# User A sets a secret
-curl -H "userId: UserA" "http://localhost:8080/advisor/chat/user?message=My%20secret%20code%20is%201234"
-
-# User B asks for the secret (should fail)
-curl -H "userId: UserB" "http://localhost:8080/advisor/chat/user?message=What%20is%20my%20secret%20code?"
-
-# User A asks for the secret (should succeed)
-curl -H "userId: UserA" "http://localhost:8080/advisor/chat/user?message=What%20is%20my%20secret%20code?"
+Custom Advisor Log - Tokens: [Prompt: 10, Gen: 20, Total: 30], Duration: 150ms
 ```
-
-### Exercise 3: Persistent Memory (The "Restart" Test)
-Keeps history even if the Spring Boot app crashes using `JdbcChatMemoryRepository` (H2 Database).
-
-**Features:**
-- Uses `H2` in-memory database (simulating persistence).
-- Uses `Spring AI`'s `JdbcChatMemoryRepository` to store conversation history.
-- Demonstrates how to inject custom repositories into `MessageWindowChatMemory`.
-
-**Test:**
-```bash
-# Set a fact
-curl "http://localhost:8080/advisor/chat/persistent?message=I%20am%20testing%20persistence"
-
-# RESTART the application (Ctrl+C, then run again)
-
-# Ask about the fact
-curl "http://localhost:8080/advisor/chat/persistent?message=What%20did%20I%20say%20I%20was%20testing?"
-```
-
-
-### Exercise 4: The Sliding Window (Cost Optimization)
-Limits history to the last 3 exchanges.
-
-**Test:**
-```bash
-# Send 4 messages
-curl "http://localhost:8080/advisor/chat/window?message=1"
-curl "http://localhost:8080/advisor/chat/window?message=2"
-curl "http://localhost:8080/advisor/chat/window?message=3"
-curl "http://localhost:8080/advisor/chat/window?message=4"
-
-# Ask what was the first message (should ideally be forgotten if window is small enough, though 3 exchanges is 6 messages usually)
-curl "http://localhost:8080/advisor/chat/window?message=What%20was%20the%20first%20thing%20I%20said?"
-```
-
-### Exercise 5: RAG (Question Answering)
-Uses Retrieval Augmented Generation to answer questions based on a specific "Mars Colonization Guide" document.
-
-**Test:**
-```bash
-# Ask about Mars
-curl "http://localhost:8080/advisor/chat/rag?message=How%20do%20we%20breathe%20on%20Mars?"
-```
-
-### Exercise 6: Content Safety
-Uses `SafeGuardAdvisor` to block sensitive or inappropriate content.
-
-**Test:**
-```bash
-# Safe Message
-curl "http://localhost:8080/advisor/chat/safety?message=Hello"
-
-# Unsafe Message (Blocked)
-curl "http://localhost:8080/advisor/chat/safety?message=This%20place%20is%20scary"
-```
-
-### Exercise 7: Logging
-Uses `SimpleLoggerAdvisor` to log requests and responses to the console for observability.
-
-**Test:**
-```bash
-curl "http://localhost:8080/advisor/chat/logging?message=Test%20Logging"
-# Check console output for logs
-```
-
-## Technical Implementation Notes
-
-### Critical Dependencies (Spring AI 1.1.2)
-- **Chat Memory**: The correct starter for persistent JDBC memory is `spring-ai-starter-model-chat-memory-repository-jdbc`.
-  - *Avoid*: `spring-ai-jdbc` or `spring-ai-jdbc-store` (these may cause resolution errors).
-- **BOM**: Always use `spring-ai-bom` for version management.
-
-### Coding Patterns
-- **Persistence Wrapper**:
-  To enable the "Sliding Window" effect on top of persistent storage, wrap the repository:
-  ```java
-  MessageWindowChatMemory.builder()
-      .chatMemoryRepository(jdbcRepository) // Injected JdbcChatMemoryRepository bean
-      .maxMessages(100)
-      .build();
-  ```
-- **Bean Injection**:
-  `JdbcChatMemoryRepository` is auto-configured by the starter. Inject it directly into your Controller/Service constructors rather than instantiating it manually with `JdbcClient`.
