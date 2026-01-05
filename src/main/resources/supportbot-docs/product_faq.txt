@@ -1,0 +1,53 @@
+TaskFlow Product FAQ
+====================
+
+General Questions
+-----------------
+
+Q: What is TaskFlow?
+A: TaskFlow is a comprehensive project management and team collaboration platform designed to help teams organize work, track progress, and deliver projects on time. It combines task management, team communication, file sharing, and reporting in one unified platform.
+
+Q: How many users can I add to my team?
+A: Free plan allows up to 5 team members. Premium and Enterprise plans have unlimited team members.
+
+Q: Is there a mobile app?
+A: Yes! TaskFlow is available on iOS and Android. Download from the App Store or Google Play. The mobile app syncs with your web account in real-time.
+
+Q: Can I use TaskFlow offline?
+A: The mobile app supports offline mode for viewing and editing tasks. Changes sync automatically when you reconnect to the internet.
+
+Q: What file types can I upload?
+A: TaskFlow supports all common file types including documents (PDF, DOC, DOCX), images (PNG, JPG, GIF), spreadsheets (XLS, XLSX, CSV), and more. Maximum file size is 100MB for Premium users and 500MB for Enterprise.
+
+Account & Security
+------------------
+
+Q: How do I change my email address?
+A: Go to Settings > Account > Email. Enter your new email and verify it through the confirmation link sent to both old and new addresses.
+
+Q: Is my data secure?
+A: Absolutely. We use industry-standard encryption (AES-256) for data at rest and TLS 1.3 for data in transit. We're SOC 2 Type II certified and GDPR compliant.
+
+Q: Can I enable two-factor authentication (2FA)?
+A: Yes, 2FA is available for all plans. Go to Settings > Security > Two-Factor Authentication. We support authenticator apps (Google Authenticator, Authy) and SMS codes.
+
+Q: How do I delete my account?
+A: Go to Settings > Account > Delete Account. Note that this action is irreversible and all your data will be permanently deleted after 30 days.
+
+Features
+--------
+
+Q: What's the difference between projects and workspaces?
+A: Workspaces are top-level containers that group related projects. For example, you might have a "Marketing" workspace containing projects for different campaigns. Projects contain tasks, files, and team discussions.
+
+Q: Can I create custom task statuses?
+A: Yes, Premium and Enterprise users can create custom task statuses beyond the default (To Do, In Progress, Done). Go to Project Settings > Task Statuses.
+
+Q: How do recurring tasks work?
+A: Set any task to repeat daily, weekly, monthly, or on custom intervals. The next occurrence is automatically created when the current task is marked complete.
+
+Q: Can I integrate TaskFlow with other tools?
+A: Yes! We integrate with Slack, Microsoft Teams, Google Drive, Dropbox, GitHub, Jira, and 50+ other tools. Enterprise users can also use our API for custom integrations.
+
+Q: How do time tracking features work?
+A: Click the timer icon on any task to start tracking time. You can also manually log time entries. Time reports are available in the Reports section.

@@ -1,0 +1,134 @@
+TaskFlow Billing and Subscription Policies
+==========================================
+
+Pricing Plans
+-------------
+
+FREE PLAN ($0/month)
+- Up to 3 active projects
+- Up to 5 team members
+- 1GB file storage
+- Basic task management
+- Email support (48-hour response)
+
+PREMIUM PLAN ($15/user/month, billed annually)
+- Unlimited projects
+- Unlimited team members
+- 100GB file storage per team
+- Advanced features: Timeline view, Custom fields, Automations
+- Priority email support (24-hour response)
+- Team analytics and reporting
+
+ENTERPRISE PLAN ($30/user/month, billed annually)
+- Everything in Premium plus:
+- 500GB file storage per team
+- Single Sign-On (SSO) with SAML 2.0
+- Advanced security controls
+- Custom integrations via API
+- Dedicated account manager
+- Priority phone and chat support (4-hour response)
+- 99.9% SLA uptime guarantee
+
+Payment Information
+-------------------
+
+Accepted Payment Methods:
+- Visa, MasterCard, American Express, Discover
+- PayPal
+- Wire transfer (Enterprise annual plans only)
+
+Billing Cycle:
+- Monthly plans are billed on the same date each month
+- Annual plans are billed once per year with 20% discount
+- Enterprise contracts can have custom billing arrangements
+
+How to Update Payment Method:
+1. Go to Settings > Billing > Payment Methods
+2. Click "Add Payment Method"
+3. Enter your new card details
+4. Set as default payment method
+5. Remove old payment method if desired
+
+Upgrading Your Plan
+-------------------
+
+Steps to Upgrade:
+1. Go to Settings > Billing
+2. Click "Change Plan"
+3. Select your desired plan
+4. Review prorated charges
+5. Confirm upgrade
+
+Prorated Billing:
+When upgrading mid-cycle, you'll only be charged the prorated difference for the remaining days in your billing period.
+
+Downgrading Your Plan
+---------------------
+
+Steps to Downgrade:
+1. Go to Settings > Billing
+2. Click "Change Plan"
+3. Select a lower-tier plan
+4. Acknowledge feature limitations
+5. Confirm downgrade
+
+Important Notes:
+- Downgrade takes effect at the end of current billing period
+- You keep access to premium features until then
+- Excess data beyond new plan limits must be removed before downgrade
+
+Cancellation Policy
+-------------------
+
+How to Cancel:
+1. Go to Settings > Billing
+2. Click "Cancel Subscription"
+3. Complete the cancellation survey (optional)
+4. Confirm cancellation
+
+What Happens After Cancellation:
+- Access continues until end of paid period
+- After that, account converts to Free plan
+- Data is retained for 30 days
+- After 30 days, data is permanently deleted
+- You can reactivate within 30 days to restore data
+
+Refund Policy
+-------------
+
+14-Day Money-Back Guarantee:
+- Full refund available within 14 days of initial purchase
+- Applies to first-time Premium and Enterprise subscriptions
+- Does not apply to renewals or add-ons
+
+How to Request a Refund:
+1. Contact support@taskflow.com
+2. Include your account email and reason for refund
+3. Refunds processed within 5-7 business days
+
+Non-Refundable Items:
+- Subscriptions older than 14 days
+- Renewal charges (cancel before renewal date)
+- Custom development or consulting services
+- Enterprise contracts (separate terms apply)
+
+Invoice and Tax Information
+---------------------------
+
+Accessing Invoices:
+- Go to Settings > Billing > Invoice History
+- Download PDF invoices for any billing period
+- Invoices are also emailed upon payment
+
+Tax Information:
+- Prices shown are exclusive of taxes unless stated
+- VAT/GST applied based on your location
+- Tax-exempt organizations can upload exemption certificate in Billing settings
+- W-9 available upon request for US organizations
+
+Contact for Billing Questions
+-----------------------------
+
+Email: billing@taskflow.com
+Phone: 1-800-TASKFLOW (Enterprise customers only)
+Live Chat: Available in-app for Premium and Enterprise users

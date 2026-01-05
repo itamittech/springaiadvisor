@@ -1,0 +1,158 @@
+TaskFlow Troubleshooting Guide
+==============================
+
+Login and Access Issues
+-----------------------
+
+PROBLEM: Cannot log in - "Invalid credentials" error
+SOLUTION:
+1. Verify you're using the correct email address
+2. Check if Caps Lock is on
+3. Try the "Forgot Password" link to reset your password
+4. Clear browser cache and cookies
+5. Try a different browser or incognito mode
+If still not working, contact support - your account may be locked.
+
+PROBLEM: "Account not found" error during login
+SOLUTION:
+1. Confirm you're on the correct login page (app.taskflow.com)
+2. Check if you signed up with a different email (try Google/Microsoft SSO)
+3. Look for original signup confirmation email
+4. Contact support if you believe this is an error
+
+PROBLEM: Two-factor authentication (2FA) not working
+SOLUTION:
+1. Ensure your device time is synced correctly (authenticator apps are time-sensitive)
+2. Try the backup codes provided during 2FA setup
+3. Request a 2FA reset by contacting support with identity verification
+
+PROBLEM: SSO login failing (Enterprise)
+SOLUTION:
+1. Verify your organization's SSO is properly configured
+2. Contact your IT administrator to check SAML settings
+3. Try using email/password login as fallback (if enabled)
+4. Check if your account exists in the IdP
+
+App Performance Issues
+----------------------
+
+PROBLEM: TaskFlow is loading slowly
+SOLUTION:
+1. Check your internet connection speed
+2. Clear browser cache (Ctrl+Shift+Delete)
+3. Disable browser extensions temporarily
+4. Try a different browser (Chrome recommended)
+5. Check status.taskflow.com for any ongoing issues
+
+PROBLEM: App freezes or becomes unresponsive
+SOLUTION:
+1. Refresh the page (F5 or Ctrl+R)
+2. Close other browser tabs to free memory
+3. Clear browser cache and reload
+4. Try incognito/private browsing mode
+5. If on mobile, force close and reopen the app
+
+PROBLEM: Changes not saving
+SOLUTION:
+1. Check your internet connection
+2. Look for error messages in the bottom corner
+3. Refresh and check if changes were actually saved
+4. Check if you have edit permissions for the item
+5. Disable browser extensions that might block requests
+
+PROBLEM: Notifications not working
+SOLUTION:
+1. Check Settings > Notifications to ensure they're enabled
+2. Verify browser notifications are allowed (check browser settings)
+3. For mobile, check app notification permissions in device settings
+4. Check email spam folder for email notifications
+5. Verify you're watching/following the relevant projects/tasks
+
+Data and Sync Issues
+--------------------
+
+PROBLEM: Mobile app not syncing with web
+SOLUTION:
+1. Pull down to refresh on mobile
+2. Check internet connection on both devices
+3. Log out and log back in on mobile app
+4. Update to the latest app version
+5. Reinstall the app if issues persist
+
+PROBLEM: Files not uploading
+SOLUTION:
+1. Check file size (max 100MB for Premium, 500MB for Enterprise)
+2. Verify file type is supported
+3. Check available storage in Settings > Billing
+4. Try a different browser
+5. Check if file is corrupted by opening locally
+
+PROBLEM: Data appears missing after update
+SOLUTION:
+1. Refresh the page completely (Ctrl+F5)
+2. Check trash/archive for deleted items
+3. Use the search function to find items
+4. Check filter settings (hidden items, date range)
+5. Contact support with specific details about missing data
+
+Integration Issues
+------------------
+
+PROBLEM: Slack integration not posting updates
+SOLUTION:
+1. Verify integration is connected in Settings > Integrations
+2. Check Slack channel permissions
+3. Re-authenticate the integration
+4. Verify the bot is invited to the target channel
+5. Check Slack workspace admin settings
+
+PROBLEM: Google Drive files not appearing
+SOLUTION:
+1. Re-authorize Google Drive in Settings > Integrations
+2. Check Google account permissions
+3. Verify files are in Drive (not just Google Docs)
+4. Try disconnecting and reconnecting integration
+
+PROBLEM: API requests failing
+SOLUTION:
+1. Verify API key is valid and not expired
+2. Check rate limits haven't been exceeded
+3. Confirm correct endpoint URL and method
+4. Check request body format (JSON)
+5. Review API documentation for required parameters
+
+Browser Compatibility
+---------------------
+
+Recommended Browsers:
+- Google Chrome (version 90+) - RECOMMENDED
+- Mozilla Firefox (version 88+)
+- Safari (version 14+)
+- Microsoft Edge (version 90+)
+
+Not Supported:
+- Internet Explorer (all versions)
+- Safari on Windows
+- Very old browser versions
+
+Mobile Requirements:
+- iOS 14+ for iPhone/iPad
+- Android 10+ for Android devices
+
+Still Need Help?
+----------------
+
+If your issue is not covered here:
+
+1. Search our Help Center: help.taskflow.com
+2. Check Community Forums: community.taskflow.com
+3. Email Support: support@taskflow.com
+4. Live Chat: Available in-app (Premium & Enterprise)
+5. Phone Support: 1-800-TASKFLOW (Enterprise only)
+
+When contacting support, please provide:
+- Your account email
+- Browser name and version
+- Steps to reproduce the issue
+- Screenshots of any error messages
+- Time when the issue occurred
