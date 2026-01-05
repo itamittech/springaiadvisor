@@ -75,3 +75,22 @@ curl "http://localhost:8080/advisor/chat/window?message=4"
 # Ask what was the first message (should ideally be forgotten if window is small enough, though 3 exchanges is 6 messages usually)
 curl "http://localhost:8080/advisor/chat/window?message=What%20was%20the%20first%20thing%20I%20said?"
 ```
+
+## Technical Implementation Notes
+
+### Critical Dependencies (Spring AI 1.1.2)
+- **Chat Memory**: The correct starter for persistent JDBC memory is `spring-ai-starter-model-chat-memory-repository-jdbc`.
+  - *Avoid*: `spring-ai-jdbc` or `spring-ai-jdbc-store` (these may cause resolution errors).
+- **BOM**: Always use `spring-ai-bom` for version management.
+
+### Coding Patterns
+- **Persistence Wrapper**:
+  To enable the "Sliding Window" effect on top of persistent storage, wrap the repository:
+  ```java
+  MessageWindowChatMemory.builder()
+      .chatMemoryRepository(jdbcRepository) // Injected JdbcChatMemoryRepository bean
+      .maxMessages(100)
+      .build();
+  ```
+- **Bean Injection**:
+  `JdbcChatMemoryRepository` is auto-configured by the starter. Inject it directly into your Controller/Service constructors rather than instantiating it manually with `JdbcClient`.
