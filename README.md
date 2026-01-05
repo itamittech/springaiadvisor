@@ -3,8 +3,8 @@
 
 This repository is structured as a **Practical Course**. Instead of a single finished project, it evolves through **Levels**.
 
-## 📍 Current Status: Level 3 (Advisor Pattern)
-We have built a **Customer Support Bot** that uses the "Chain of Responsibility" pattern (Advisors) to handle Safety, RAG, and Sentiment Analysis.
+## 📍 Current Status: Level 4 (Agentic AI)
+We have built an **Intelligent Support Agent** that uses **Spring AI Tools** (Function Calling) to autonomously manage tickets, alongside RAG and Memory.
 
 ---
 
@@ -14,8 +14,8 @@ We have built a **Customer Support Bot** that uses the "Chain of Responsibility"
 |-------|--------|---------|---------|
 | **1** | `level-1-basics` | Basics (ChatClient) | Simple Console Bot |
 | **2** | `level-2-rag` | Knowledge (VectorStore) | DocuBot |
-| **3** | `main` | **Middleware (Advisors)** | **TaskFlow Support Bot** |
-| **4** | `level-4-agents` | **Agency (Tools)** | *Coming Next* |
+| **3** | `level-3-advisors` | Middleware (Advisors) | TaskFlow Bot (Regex) |
+| **4** | `main` | **Agency (Tools)** | **TaskFlow Agent** |
 | **5** | `level-5-production` | Engineering (Eval, Docker) | *Future* |
 
 👉 **[Start Learning: View Full Curriculum & Roadmap](docs/COURSE_CURRICULUM.md)**
