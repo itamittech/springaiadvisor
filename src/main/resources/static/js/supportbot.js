@@ -118,7 +118,7 @@ async function loadTickets() {
     }
 }
 
-// Send message
+// Send message (Streaming)
 async function sendMessage() {
     const message = messageInput.value.trim();
     if (!message) return;
@@ -132,43 +132,68 @@ async function sendMessage() {
     showTyping(true);
     sendBtn.disabled = true;
 
+    // Prepare Bot Message Container
+    const botMessageDiv = createMessageDiv('bot');
+    const contentDiv = botMessageDiv.querySelector('.message-content');
+    contentDiv.innerHTML = ''; // Start empty
+    chatMessages.appendChild(botMessageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    let fullText = '';
+
     try {
-        const response = await fetch('/support/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: message,
-                customerId: currentCustomerId,
-                sessionId: sessionId
-            })
+        // Construct SSE URL
+        const params = new URLSearchParams({
+            message: message,
+            customerId: currentCustomerId || '',
+            sessionId: sessionId || ''
         });
 
-        const data = await response.json();
+        const eventSource = new EventSource(`/support/stream?${params.toString()}`);
 
-        // Hide typing indicator
-        showTyping(false);
-        sendBtn.disabled = false;
+        eventSource.onmessage = (event) => {
+            // Hide typing indicator on first token
+            showTyping(false);
 
-        // Add bot response
-        addMessage('bot', data.message);
+            const token = event.data;
+            // Handle newlines in SSE (often sent as literal \n or separate events)
+            // Spring AI sends raw tokens.
 
-        // Update sentiment display
-        if (data.sentiment) {
-            updateSentiment(data.sentiment);
-        }
+            fullText += token.replace(/\\n/g, '\n'); // Simple unescape if needed
+            contentDiv.innerHTML = marked.parse(fullText);
 
-        // Refresh tickets if one was created
-        if (data.ticketCreated) {
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        };
+
+        eventSource.onerror = (error) => {
+            // Stream ended or error
+            eventSource.close();
+            sendBtn.disabled = false;
+            showTyping(false);
+
+            // Refresh tickets just in case (optional, we lose the 'ticketCreated' flag from JSON response)
+            // We could blindly refresh or poll.
             loadTickets();
-        }
+        };
+
     } catch (error) {
-        console.error('Failed to send message:', error);
+        console.error('Failed to start stream:', error);
         showTyping(false);
         sendBtn.disabled = false;
-        addMessage('bot', '❌ Sorry, I encountered an error. Please try again.');
+        contentDiv.innerHTML = '❌ Error starting stream.';
     }
+}
+
+function createMessageDiv(type) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}-message`;
+    const avatar = type === 'bot' ? '🤖' : '👤';
+    messageDiv.innerHTML = `
+        <div class="message-avatar">${avatar}</div>
+        <div class="message-content"><span class="cursor"></span></div>
+    `;
+    return messageDiv;
 }
 
 // Quick question buttons

@@ -32,6 +32,20 @@ public class SupportChatController {
     }
 
     /**
+     * Streaming chat endpoint (Level 4.5).
+     * Uses Server-Sent Events (SSE) to push tokens.
+     */
+    @GetMapping(value = "/stream", produces = org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE)
+    public reactor.core.publisher.Flux<String> streamChat(
+            @RequestParam String message,
+            @RequestParam(required = false) String customerId,
+            @RequestParam(required = false) String sessionId) {
+
+        ChatRequest request = new ChatRequest(message, customerId, sessionId);
+        return supportBotService.streamChat(request);
+    }
+
+    /**
      * Simple chat endpoint (GET for easy testing).
      * 
      * GET /support/chat?message=...

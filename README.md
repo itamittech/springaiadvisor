@@ -4,7 +4,8 @@
 This repository is structured as a **Practical Course**. Instead of a single finished project, it evolves through **Levels**.
 
 ## 📍 Current Status: Level 4 (Agentic AI)
-We have built an **Intelligent Support Agent** that uses **Spring AI Tools** (Function Calling) to autonomously manage tickets, alongside RAG and Memory.
+- **Level 4: Agentic AI**: Autonomous "Agent" that uses tools (`createTicket`) to take action based on reasoning.
+- **Level 4.5: Streaming UI**: Real-time token streaming (SSE) and a premium minimalist "Neural" design theme.
 
 ---
 

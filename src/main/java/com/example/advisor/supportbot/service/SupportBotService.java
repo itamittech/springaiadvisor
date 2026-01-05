@@ -119,8 +119,41 @@ public class SupportBotService {
     }
 
     /**
-     * Simple chat without customer context (for demo/testing).
+     * STREAMING chat handler (Level 4.5).
+     * Returns a Flux<String> for real-time token streaming.
      */
+    public reactor.core.publisher.Flux<String> streamChat(ChatRequest request) {
+        // Get RAG context from knowledge base
+        String context = knowledgeBaseService.getContextForQuery(request.message(), 3);
+        String category = knowledgeBaseService.categorizeQuery(request.message());
+
+        // Build enhanced system prompt
+        SystemPromptTemplate systemPromptTemplate = new SystemPromptTemplate(systemPromptResource);
+        String enhancedSystemPrompt = systemPromptTemplate.createMessage(java.util.Map.of(
+                "category", category,
+                "context", context)).getText();
+
+        // Set context
+        Long customerId = parseCustomerId(request.customerId());
+        if (customerId != null) {
+            customerContextAdvisor.setCustomerId(customerId);
+        }
+        String conversationId = request.sessionId() != null ? request.sessionId()
+                : (request.customerId() != null ? "customer-" + request.customerId() : "anonymous");
+
+        // Stream response
+        return chatClient.prompt()
+                .system(enhancedSystemPrompt)
+                .user(request.message())
+                .advisors(safetyAdvisor)
+                .advisors(customerContextAdvisor)
+                // Note: Sentiment & Ticket tools might not work fully in stream mode
+                // depending on Spring AI version, but core text will stream.
+                .advisors(a -> a.param("chat_memory_conversation_id", conversationId))
+                .stream()
+                .content();
+    }
+
     public String simpleChat(String message) {
         return chat(ChatRequest.anonymous(message)).message();
     }

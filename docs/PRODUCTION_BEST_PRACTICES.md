@@ -28,12 +28,21 @@ Here are the key improvements to bridge the gap between Tutorial and Production.
     - Latency (Performance)
     - Tool Execution Success/Failure rates.
 
+### 4. Observability & Latency
+- **Token Streaming**: Using Server-Sent Events (SSE) `/support/stream` to reduce *perceived latency*. The user sees the first token immediately, rather than waiting for the entire response.
+- **Structured Logging**: All advisor interactions are logged for auditing.
+    - Tool Execution Success/Failure rates.
+
 ## 4. Testing Strategy
 **Current:** Browser Smoke Tests.
 **Problem:** Slow and manual.
 **Best Practice:**
 - **Unit Tests for Tools**: Test `TicketTools` in isolation (standard JUnit).
 - **Integration Tests (Eval)**: Use `Spring AI Eval` to mock the LLM and assert that "Refund request" -> "Tool Call Matcher".
+
+### 5. Frontend & UI
+- **Zero-Block UI**: Frontend uses non-blocking `EventSource` to consume the stream.
+- **Minimalist Design**: Using a "Neural" color palette and optimized fonts (Inter) to reduce cognitive load and increase trust.
 
 ## 5. Security (Prompt Injection)
 **Current:** Basic `SafetyAdvisor`.
