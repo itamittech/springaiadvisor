@@ -1,5 +1,6 @@
 package com.example.advisor.configuration;
 
+import com.example.advisor.advisor.CustomLoggingAdvisor;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SafeGuardAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -55,6 +56,11 @@ public class AdvisorConfiguration {
     public SafeGuardAdvisor safeGuardAdvisor() {
         List<String> sensitiveWords = List.of("dark", "scary", "fart", "violence", "kill");
         return new SafeGuardAdvisor(sensitiveWords);
+    }
+
+    @Bean
+    public CustomLoggingAdvisor customLoggingAdvisor() {
+        return new CustomLoggingAdvisor();
     }
 
     @Bean

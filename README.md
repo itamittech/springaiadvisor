@@ -1,28 +1,53 @@
 # Spring AI Advisor Application
 
-This project demonstrates various Spring AI features, including memory management, RAG, content safety, and custom advisors.
+A comprehensive Spring AI demonstration showcasing memory management, RAG, content safety, and custom advisors.
 
-## Features
-
-| # | Feature | Description |
-|---|---|---|
-| 1 | **In-Memory** | Conversation history stored in memory |
-| 2 | **Multi-User** | Separate histories per `userId` header |
-| 3 | **Persistent** | H2 database for history across restarts |
-| 4 | **Sliding Window** | Keeps only recent N messages for cost optimization |
-| 5 | **RAG** | Uses Mars Colonization Guide for Q&A |
-| 6 | **Safety** | `SafeGuardAdvisor` filters harmful content |
-| 7 | **Logging** | Custom logging of token usage and duration |
-| 8 | **Custom Feature** | Combined RAG + Persistence + Logging + PromptEnhancer |
-
-## Running the Application
+## Quick Start
 
 ```bash
 export OPENAI_API_KEY=sk-...
 mvn spring-boot:run
 ```
 
-Access the UI at: `http://localhost:8080/`
+Access UI: `http://localhost:8080/`
+
+## Features
+
+| Feature | Endpoint | Description |
+|---|---|---|
+| In-Memory | `/advisor/chat/memory` | Conversation in memory, resets on restart |
+| Multi-User | `/advisor/chat/user` | Separate histories via `userId` header |
+| Persistent | `/advisor/chat/persistent` | H2 database persistence |
+| Sliding Window | `/advisor/chat/window` | Keeps last 6 messages for cost optimization |
+| RAG | `/advisor/chat/rag` | Uses Mars Colonization Guide |
+| Safety | `/advisor/chat/safety` | Filters sensitive words |
+| Logging | `/advisor/chat/logging` | Token usage logging via `CustomLoggingAdvisor` |
+| Custom Feature | `/advisor/chat/custom-feature` | Combined: RAG + Memory + Safety + Logging |
+
+## Custom Advisors
+
+### CustomLoggingAdvisor
+Implements `CallAdvisor` interface to log token usage and execution time:
+```java
+public class CustomLoggingAdvisor implements CallAdvisor, StreamAdvisor {
+    @Override
+    public ChatClientResponse adviseCall(ChatClientRequest request, CallAdvisorChain chain) {
+        // Log request, execute chain, log response + tokens
+    }
+}
+```
+
+### PromptEnhancerAdvisor
+Uses Spring AOP `@Aspect` to modify prompts before processing:
+```java
+@Aspect @Component
+public class PromptEnhancerAdvisor {
+    @Around("execution(* ...chatCustomFeature(..))")
+    public Object enhancePrompt(ProceedingJoinPoint joinPoint, String message) {
+        // Append formatting instructions to user prompt
+    }
+}
+```
 
 ## Screenshots
 
@@ -44,26 +69,18 @@ Access the UI at: `http://localhost:8080/`
 ### Custom Feature (Advisor Chain)
 ![Custom Feature](docs/screenshots/custom_feature_demo_final_1767603638997.png)
 
-## Endpoints
+## Architecture
 
-| Endpoint | Description |
-|---|---|
-| `/advisor/chat/memory` | In-Memory Bot |
-| `/advisor/chat/user` | Multi-User Bot |
-| `/advisor/chat/persistent` | Persistent Memory Bot |
-| `/advisor/chat/window` | Sliding Window Bot |
-| `/advisor/chat/rag` | RAG Bot (Mars Guide) |
-| `/advisor/chat/safety` | Safety Advisor Bot |
-| `/advisor/chat/logging` | Logging Advisor Bot |
-| `/advisor/chat/custom-feature` | Combined Feature Bot |
-
-## Custom Advisors
-
-### PromptEnhancerAdvisor (Spring AOP)
-Automatically appends "Please format your response with clear bullet points" to all prompts in the Custom Feature endpoint.
-
-### Custom Logging
-Logs token usage to console:
 ```
-Custom Advisor Log - Tokens: [Prompt: 10, Gen: 20, Total: 30], Duration: 150ms
+AdvisorConfiguration.java    - Bean definitions for all advisors
+AdvisorAssignmentController  - REST endpoints
+CustomLoggingAdvisor         - CallAdvisor implementation for logging
+PromptEnhancerAdvisor        - Spring AOP aspect for prompt modification
 ```
+
+## Dependencies
+
+- `spring-ai-starter-model-openai` - OpenAI integration
+- `spring-ai-starter-model-chat-memory-repository-jdbc` - H2 persistence
+- `spring-ai-starter-vector-store-simple` - Vector store for RAG
+- `spring-boot-starter-aop` - AOP support for PromptEnhancer
